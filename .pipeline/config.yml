@@ -26,3 +26,11 @@ steps:
       - 'CCFenner'
       - 'OliverNocon'
       - 'nevskrem'
+  mtaBuild:
+    buildTarget: 'CF'
+  cloudFoundryDeploy:
+    cloudFoundry:
+      credentialsId: 'CF'
+      apiEndpoint: '<CF Endpoint>'
+      org: '<CF Organization>'
+      space: '<CF Space>'
