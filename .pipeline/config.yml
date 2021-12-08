@@ -1,4 +1,6 @@
 steps:
+  general:
+    verbose: true
   githubPublishRelease:
     addClosedIssues: true
     addDeltaToLastRelease: true
