@@ -31,6 +31,6 @@ steps:
   cloudFoundryDeploy:
     cloudFoundry:
       credentialsId: 'CF'
-      apiEndpoint: '<CF Endpoint>'
-      org: '<CF Organization>'
-      space: '<CF Space>'
+      apiEndpoint: 'https://api.cf.eu10.hana.ondemand.com'
+      org: 'mckdvsd'
+      space: 'mckdevapp'
