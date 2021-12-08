@@ -1,0 +1,125 @@
+_schema-version: "3.1"
+ID: cicd-demoapp
+description: A simple CAP project.
+version: 1.0.0
+modules:
+- name: cicd-demoapp-srv
+  type: nodejs
+  path: gen/srv
+  requires:
+  - name: cicd-demoapp-db
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+- name: cicd-demoapp-db-deployer
+  type: hdb
+  path: gen/db
+  requires:
+  - name: cicd-demoapp-db
+  parameters:
+    buildpack: nodejs_buildpack
+- name: cicd-demoapp-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: cicd-demoapp-destination-service
+    parameters:
+      content-target: true
+  - name: cicd-demoapp_html_repo_host
+    parameters:
+      service-key:
+        name: cicd-demoapp_html_repo_host-key
+  - name: uaa_cicd-demoapp
+    parameters:
+      service-key:
+        name: uaa_cicd-demoapp-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: bs_cicd_demoapp_html_repo_host
+          ServiceInstanceName: cicd-demoapp-html5-app-host-service
+          ServiceKeyName: cicd-demoapp_html_repo_host-key
+          sap.cloud.service: bs
+        - Authentication: OAuth2UserTokenExchange
+          Name: bs_uaa_cicd_demoapp
+          ServiceInstanceName: cicd-demoapp-xsuaa-service
+          ServiceKeyName: uaa_cicd-demoapp-key
+          sap.cloud.service: bs
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: cicd-demoapp-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: cicd-demoapp_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - mckcglbcicddemoui.zip
+      name: mckcglbcicddemoui
+      target-path: resources/
+- name: mckcglbcicddemoui
+  type: html5
+  path: app/cicddemoui
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: cicd-demoapp-db
+  type: com.sap.xs.hdi-container
+  parameters:
+    service: hana
+    service-plan: hdi-shared
+  properties:
+    hdi-service-name: ${service-name}
+- name: cicd-demoapp-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: cicd-demoapp-destination-service
+    service-plan: lite
+- name: cicd-demoapp_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: cicd-demoapp-html5-app-host-service
+    service-plan: app-host
+- name: uaa_cicd-demoapp
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: cicd-demoapp-xsuaa-service
+    service-plan: application
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm install --production
+    - npx -p @sap/cds-dk cds build --production
