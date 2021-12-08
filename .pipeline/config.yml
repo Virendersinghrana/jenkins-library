@@ -11,12 +11,12 @@ steps:
       - 'question'
       - 'wontfix'
       - 'stale'
-    owner: 'SAP'
+    owner: 'virendersinghrana'
     repository: 'jenkins-library'
     releaseBodyHeader: ''
   githubCreatePullRequest:
     base: master
-    owner: 'SAP'
+    owner: 'virendersinghrana'
     repository: 'jenkins-library'
     labels:
       - 'REVIEW'
